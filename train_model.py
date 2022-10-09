@@ -141,7 +141,7 @@ class TrainModel(CNN):
             cost = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=y_predict, labels=self.Y))
         # 梯度下降
         with tf.name_scope('train'):
-            optimizer = tf.train.AdamOptimizer(learning_rate=0.0001).minimize(cost)
+            optimizer = tf.compat.v1.train.AdamOptimizer(learning_rate=0.0001).minimize(cost)
         # 计算准确率
         predict = tf.reshape(y_predict, [-1, self.max_captcha, self.char_set_len])  # 预测结果
         max_idx_p = tf.argmax(predict, 2)  # 预测结果
@@ -153,9 +153,9 @@ class TrainModel(CNN):
         with tf.name_scope('image_acc'):
             accuracy_image_count = tf.reduce_mean(tf.reduce_min(tf.cast(correct_pred, tf.float32), axis=1))
         # 模型保存对象
-        saver = tf.train.Saver()
-        with tf.Session() as sess:
-            init = tf.global_variables_initializer()
+        saver = tf.compat.v1.train.Saver()
+        with tf.compat.v1.Session() as sess:
+            init =tf.compat.v1.global_variables_initializer()
             sess.run(init)
             # 恢复模型
             if os.path.exists(self.model_save_dir):
@@ -167,7 +167,7 @@ class TrainModel(CNN):
             else:
                 pass
             # 写入日志
-            tf.summary.FileWriter("logs/", sess.graph)
+            tf.compat.v1.summary.FileWriter("logs/", sess.graph)
 
             step = 1
             for i in range(self.cycle_stop):
@@ -220,8 +220,8 @@ class TrainModel(CNN):
 
         y_predict = self.model()
 
-        saver = tf.train.Saver()
-        with tf.Session() as sess:
+        saver = tf.compat.v1.train.Saver()
+        with tf.compat.v1.Session() as sess:
             saver.restore(sess, self.model_save_dir)
             predict = tf.argmax(tf.reshape(y_predict, [-1, self.max_captcha, self.char_set_len]), 2)
             text_list = sess.run(predict, feed_dict={self.X: [image], self.keep_prob: 1.})
